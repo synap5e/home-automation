@@ -13,6 +13,33 @@ body {
   margin: 8px 5px 0 20px;
 }
 
+#led{
+  display:block;
+  width: 30px;
+  height: 30px;
+  border-radius:100%;
+  margin:auto;
+  transition:0.4s;
+  position:relative;
+  top:auto;
+  margin-left: 135px;
+  margin-top:-48px;
+  background: radial-gradient(ellipse at center, #757575 0%,#2E2E2E 60%, #262121 100%);
+}
+
+#led.red{
+  background: radial-gradient(ellipse at center, #fff 0%,#fff 20%,#FFAA75 40%,#FC3B14 70%,#FA2A00 100%);
+  box-shadow:0 0 20px 3px #FA2A00;
+}
+
+#led.green{
+
+}
+
+#led.blue{
+
+}
+
 #views {
   width: 900px;
   margin: 0 auto 40px auto;

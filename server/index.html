@@ -17,26 +17,25 @@
 		<div id="panel">
 			<h1>Control Panel</h1>
 			<br/>
-			<h3>Temperature: </h3>
-		  
-			<h3>Heater: </h3>
-			<div class="switch switch-four candy blue">
-				<input id="on" name="switch" type="radio" checked="">
-				<label for="on" onclick="ui_update('on')">On</label>
+			<h3 id="temp">Temperature: ??</h3>
+			<h3>Heater on:</h3><div class="led" id="led"></div><br/>
+			<div class="switch switch-four candy green">
+				<input id="on" name="switch" type="radio">
+				<label for="on" onclick="mode_changed('on')">On</label>
 
 				<input id="target" name="switch" type="radio">	
-				<label for="target" onclick="ui_update('target')">Target</label>
+				<label for="target" onclick="mode_changed('target')">Target</label>
 				
 				<input id="auto" name="switch" type="radio">	
-				<label for="auto" onclick="ui_update('auto')">Auto</label>
+				<label for="auto" onclick="mode_changed('auto')">Auto</label>
 					
 				<input id="off" name="switch" type="radio">
-				<label for="off" onclick="ui_update('off')">Off</label>
+				<label for="off" onclick="mode_changed('off')">Off</label>
 					
 				<span class="slide-button"></span>
 			</div>
 			
-			<div id="slider">
+			<div id="slider" style="display: none;">
 				<div id="temperature"></div>
 			</div>
 		  <!--<footer>
