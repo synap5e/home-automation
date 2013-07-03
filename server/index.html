@@ -6,15 +6,39 @@
 		<script type='text/javascript' src='js/jquery-2.0.2.js'></script>
 		<script type='text/javascript' src='js/spine.js'></script>
 		<script type='text/javascript' src='js/main.js'></script>
+		<script type='text/javascript' src='js/jquery-ui-1.10.3.min.js'></script>
+		<link href="css/toggle-switch.css" rel="stylesheet">
+		<link href="css/slider.css" rel="stylesheet">
+		<link href="css/slider.css" rel="stylesheet">
+		<link href="css/jquery-ui-1.10.3.min.css" rel="stylesheet">
     </head>
 	<body>
 	  <div id="views">
 		<div id="panel">
-		  <h1>Control Panel</h1>
+			<h1>Control Panel</h1>
+			<br/>
+			<h3>Temperature: </h3>
 		  
-		  <h3>Temperature: </h3><br/>
-		  
-		  <button id="onoff" class="undef">Loading</button>
+			<h3>Heater: </h3>
+			<div class="switch switch-four candy blue">
+				<input id="on" name="switch" type="radio" checked="">
+				<label for="on" onclick="ui_update('on')">On</label>
+
+				<input id="target" name="switch" type="radio">	
+				<label for="target" onclick="ui_update('target')">Target</label>
+				
+				<input id="auto" name="switch" type="radio">	
+				<label for="auto" onclick="ui_update('auto')">Auto</label>
+					
+				<input id="off" name="switch" type="radio">
+				<label for="off" onclick="ui_update('off')">Off</label>
+					
+				<span class="slide-button"></span>
+			</div>
+			
+			<div id="slider">
+				<div id="temperature"></div>
+			</div>
 		  <!--<footer>
 			<a class="clear">Clear completed</a>
 			<div class="count"><span class="countVal"></span> left</div>
@@ -22,4 +46,4 @@
 		</div>
 	  </div>
 	</body>
-</html>
+</html>>
