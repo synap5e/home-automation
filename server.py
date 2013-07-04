@@ -84,11 +84,7 @@ def take_reading():
 		db.set('last_reading', temp)
 	set_heater()
 
-@sched.interval_schedule(minutes=1)
-def countdown():
-	rem = db.get('minutes_remaining')
-	if rem < 10**6:
-		
+
 
 if db.get('mode') == None:
 	db.set('mode', 'off')
