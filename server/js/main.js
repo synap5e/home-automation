@@ -1,13 +1,54 @@
+function timeSliderTooltip(val) {
+    if (val >= Math.pow(10, 6)) {
+        var curValue = "Forever"
+    } else {
+        var curValue = Math.floor(val / 60) + ":" + ("00" + val % 60).substr(-2);
+    }
+    var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + curValue + '</div><div class="tooltip-arrow"></div></div>';
+    $('#time_slider').find('.ui-slider-handle').html(tooltip);
+}
+function sliderTooltip(event, ui) {
+	var curValue = (ui.value/10 || 12) + "\u00B0C"; // current value (when sliding) or initial value (at start)
+	var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + curValue + '</div><div class="tooltip-arrow"></div></div>';
+	$('#temperature').find('.ui-slider-handle').html(tooltip); //attach tooltip to the slider handle
+}
+function set_time(val) {
+    val = Math.round(val / 5)*5
+    $("#slider").slider("option", "value", val);
+}
 jQuery(document).ready(function(){	
-	var sliderTooltip = function(event, ui) {
-		var curValue = (ui.value/10 || 12) + "\u00B0C"; // current value (when sliding) or initial value (at start)
-		var tooltip = '<div class="tooltip"><div class="tooltip-inner">' + curValue + '</div><div class="tooltip-arrow"></div></div>';
+	initial_value = 1 * 60
+	$("#time_slider").slider({
+		min: 5,
+		max: 5 * 60 + 5,
+		value: initial_value,
+		step: 5,
+		animate: true,
+		range: "min",
+		slide: function (event, ui) {
+			if (ui.value > 5*60){
+				ui.value = Math.pow(10, 6);
+			}
+			timeSliderTooltip(ui.value);
+		},
+		create: function (event, ui) {
+			timeSliderTooltip(initial_value);
+		},
+		change: function(event, ui){
+			if (ui.value > 5*60){
+				ui.value = Math.pow(10, 6);
+			}
+			if (typeof(event.button) != "undefined"){
+				// From user
+				console.log(ui.value);
+				do_update({'minutes_remaining': ui.value});
+			}
+			timeSliderTooltip(ui.value);
+		} 
+	});
 
-		$('.ui-slider-handle').html(tooltip); //attach tooltip to the slider handle
-	}
-
-	do_update();
-	window.setInterval(do_update, 10000)
+	do_update({});
+	window.setInterval(function(){do_update({});}, 10000)
 	$("#onoff").click(function(){
 		$.ajax({
 			url: '/status.json',
@@ -28,7 +69,7 @@ jQuery(document).ready(function(){
 			slide: function(event, ui) {
 				sliderTooltip(event, ui);
 				
-				if (ui.value < 100){  // corrected
+				if (ui.value < 100){
 					$('#temperature').slider('value', 100);
 					ui.value = 100;
 					sliderTooltip(event, ui);
@@ -36,11 +77,9 @@ jQuery(document).ready(function(){
 				}
 			},
 			change: function(event, ui){
-				console.log(typeof(event.button));
 				if (typeof(event.button) != "undefined"){
 					// From user
-					target_changed(ui.value/10);
-					
+					do_update({'target': ui.value/10});
 				}
 				sliderTooltip(event, ui);
 			} 
@@ -49,28 +88,14 @@ jQuery(document).ready(function(){
 });
 
 function mode_changed(val){
-	$.ajax({
-		type: "GET",
-		url: '/status.json',
-		data: {'mode': val},
-		success: parse_status,
-	});
+	do_update({'mode': val});
 }
 
-function target_changed(new_target){
+function do_update(data){
 	$.ajax({
 		type: "GET",
 		url: '/status.json',
-		data: {'target': new_target},
-		success: parse_status,
-	});
-}
-
-function do_update(){
-	$.ajax({
-		type: "GET",
-		url: '/status.json',
-		//data: {'foo': 'bar'},
+		data: data,
 		success: parse_status,
 	});
 }
@@ -85,13 +110,15 @@ function parse_status(data) {
 		$('#onoff').attr('class', 'off');
 		$('#onoff').text("Disabled");
 	}
-	console.log(data['heater_on']);
 	if (data['heater_on']){
 		$('#led').addClass('red');
 	} else {
 		$('#led').removeClass('red');
 	}
-	window.setTimeout(400, function(){$('#temperature').slider('value', (data['target'])*10);});
+	window.setTimeout(function(){
+		$('#temperature').slider('value', (data['target'])*10);
+		$('#time_slider').slider('value', data['minutes_remaining']);
+	}, 200);
 	$('#temp').text("Temperature: " + data['last_reading'] + "\u00B0C");
 	mode = data["mode"];
 	if (mode == 'target'){
@@ -106,6 +133,11 @@ function parse_status(data) {
 		} else if (mode == 'auto'){
 			$("#auto").prop('checked', true);
 		}
+	}
+	if (mode == 'auto'){
+		$('#time_slider').hide();
+	} else {
+		$('#time_slider').show();
 	}
 	
 }
