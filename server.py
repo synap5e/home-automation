@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 HOST_NAME = "0.0.0.0"
-PORT_NUMBER = 8082	
-REAL_SERIAL = False
+PORT_NUMBER = 80	
+REAL_SERIAL = True
 SAMPLE_PERIOD = 15 # store in history once every 15 minutes
 UPDATE_PERIOD = 1 # set heater once every minute
 t = None
@@ -10,9 +10,12 @@ t = None
 import pickledb
 db = pickledb.load('data.db', False)
 
+
+db.set('fail_count', 0)
 if REAL_SERIAL:
 	import serial
-	wrt_ser = serial.Serial('/dev/ttyATH0', 115200, timeout=0.5)
+	wrt_ser = serial.Serial('/dev/ttyATH0', 115200, timeout=2)
+	wrt_ser.read(1024)
 else:
 	wrt_ser = file('tmp.serial', 'wc')
 
@@ -27,19 +30,43 @@ def get_time():
 	tt = datetime.datetime.now().timetuple()
 	return (tt[3] * 60 + tt[4])/SAMPLE_PERIOD
 
+import struct
+
+def get_temp():
+	try:
+		wrt_ser.write('\x21')
+		val = struct.unpack('<H', wrt_ser.read(2))[0]
+		fail_count = 0
+		return round((((( val * 5.0 ) / 1024.0 ) - 0.5 ) * 100.0), 1)
+	except:
+		time.sleep(1)
+		db.set('fail_count', db.get('fail_count') + 1)
+		if db.get('fail_count') > 8:
+			print "Failed 8 times successively"
+			sched.shutdown(wait=False)
+			db.dump()
+			import sys
+			sys.exit()
+		return get_temp()
+
 def read_temperature():
 	print "Reading temperature"
 	try:
-		time.sleep(5)
+		data = list()
+		for _ in range(0, 16):
+			time.sleep(0.1)
+			temp = get_temp()
+			data.append(temp)
+		return sorted(data)[8]
 	except KeyboardInterrupt:
 		pass
-	return 17
+	return -1
 	
 def turn_heater_on(on):
 	if on:
-		pass
+		wrt_ser.write('\x10\xff')
 	else:
-		pass
+		wrt_ser.write('\x10\x00')
 
 def set_heater():
 	print "Setting heater"
@@ -81,7 +108,7 @@ def take_reading():
 	if data[time] == 0:
 		data[time] = temp
 		db.set(day, data)
-		db.set('last_reading', temp)
+	db.set('last_reading', temp)
 	set_heater()
 
 
